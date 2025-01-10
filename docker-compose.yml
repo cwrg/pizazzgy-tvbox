@@ -1,0 +1,24 @@
+services:
+  pizazzgy:
+    build:
+      context: ./docker
+      args:
+        TZ: "Asia/Shanghai"
+    container_name: tvbox
+    ports:
+      - "8033:8033"
+    volumes:
+      - ./www:/www:rw
+      - ./docker/nginx/conf.d:/etc/nginx/http.d/:rw
+      - ./docker/nginx/fastcgi-php.conf:/etc/nginx/fastcgi-php.conf:ro
+      - ./docker/nginx/fastcgi_params:/etc/nginx/fastcgi_params:ro
+    restart: always
+    tty: true
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
