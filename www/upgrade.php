@@ -43,7 +43,7 @@ class Upgrade
     public function getUpgradeUrl()
     {
         $url = self::URI;
-        if (is_file('./resource/TVBoxOSC/tvbox/api.json')) {
+        if (file_exists('./resource/TVBoxOSC/tvbox/api.json')) {
             $json = file_get_contents('./resource/TVBoxOSC/tvbox/api.json');
             $json = json_decode($json, true);
             $sites = array_column($json['sites'], null, 'api');
