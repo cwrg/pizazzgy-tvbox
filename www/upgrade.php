@@ -26,7 +26,13 @@ class Upgrade
     {
         $data = file_get_contents($this->getUpgradeUrl());
         $data = json_decode($data, true);
-        $result = $data[2]['list'][0] ?? [];
+        $result = [];
+        foreach ($data as $item) {
+            if (strpos($item['name'], '更新') !== false) {
+                $result = $item['list'][0] ?? [];
+                break;
+            }
+        }
         if (!$result) {
             $this->result(0, '获取升级信息失败');
         }
