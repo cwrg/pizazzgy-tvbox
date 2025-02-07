@@ -68,7 +68,14 @@ class Upgrade
     {
         $file = './upgrade/' . $version . '.zip';
         is_dir(dirname($file)) || mkdir(dirname($file), 0777, true);
-        file_put_contents($file, file_get_contents($url));
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $data = curl_exec($ch);
+        curl_close($ch);
+        file_put_contents($file, $data);
         return $file;
     }
 
