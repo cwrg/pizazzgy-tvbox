@@ -1,4 +1,4 @@
-潇洒本地包同步
+PG本地包同步
 ===============
 
 访问地址:http://127.0.0.1:8033/resource/TVBoxOSC/tvbox/api.json
