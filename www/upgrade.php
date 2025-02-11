@@ -3,21 +3,8 @@
 class Upgrade
 {
 
-    const URI = 'https://9877.kstore.space/Market/market.json';
+    const URI = 'http://www.fish2018.us.kg/p/jsm.json';
 
-    /**
-     * 直播源
-     * @var array[]
-     */
-    public static $lives = [
-        [
-            'name' => 'ssili126',
-            'type' => 0,
-            'url' => 'https://ghproxy.net/raw.githubusercontent.com/ssili126/tv/main/itvlist.txt',
-            'playerType' => 1,
-            'timeout' => 10
-        ]
-    ];
 
     /**
      * 获取版本号
@@ -40,20 +27,16 @@ class Upgrade
     {
         $data = file_get_contents($this->getUpgradeUrl());
         $data = json_decode($data, true);
-        $result = [];
-        foreach ($data as $item) {
-            if (strpos($item['name'], '更新') !== false) {
-                $result = $item['list'][0] ?? [];
-                break;
-            }
+        $sites = array_column($data['sites'], null, 'key');
+        $key = 'https://github.com/fish2018/PG';
+        if (!isset($sites[$key])) {
+            $this->result(0, '升级信息获取失败');
         }
-        if (!$result) {
-            $this->result(0, '获取升级信息失败');
-        }
-        if ($this->getVersion() == $result['version']) {
+        $upgrade = $sites[$key];
+        if ($this->getVersion() == $upgrade['name']) {
             $this->result(0, '当前已是最新版本', ['version' => $this->getVersion()]);
         }
-        return $result;
+        return $upgrade;
     }
 
     /**
@@ -62,14 +45,7 @@ class Upgrade
      */
     public function getUpgradeUrl()
     {
-        $url = self::URI;
-        if (file_exists('./resource/TVBoxOSC/tvbox/api.json')) {
-            $json = file_get_contents('./resource/TVBoxOSC/tvbox/api.json');
-            $json = json_decode($json, true);
-            $sites = array_column($json['sites'], null, 'api');
-            $url = $sites['csp_Market']['ext'] ?? $url;
-        }
-        return $url;
+        return self::URI;
     }
 
     /**
@@ -109,19 +85,6 @@ class Upgrade
         $zip->close();
     }
 
-    /**
-     * 合并直播源
-     * @param $lives
-     * @return void
-     */
-    private function mergeLives($lives)
-    {
-        $file = './resource/TVBoxOSC/tvbox/api.json';
-        $data = file_get_contents($file);
-        $data = json_decode($data, true);
-        $data['lives'] = array_merge($data['lives'], $lives);
-        file_put_contents($file, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-    }
 
     /**
      * @param $code
@@ -145,11 +108,10 @@ class Upgrade
     {
         $static = new static();
         $upgrade = $static->getUpgradeInfo();
-        $file = $static->download($upgrade['url'], $upgrade['version']);
+        $file = $static->download($upgrade['zip'], $upgrade['name']);
         $static->unzip($file);
-        $static->mergeLives(self::$lives);
-        file_put_contents('./version', $upgrade['version']);
-        $static->result(1, '升级成功', ['version' => $upgrade['version']]);
+        file_put_contents('./version', $upgrade['name']);
+        $static->result(1, '升级成功', ['version' => $upgrade['name']]);
     }
 
 }
