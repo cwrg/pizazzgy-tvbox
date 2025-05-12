@@ -28,9 +28,11 @@ class Upgrade
         $data = json_decode($data, true);
         $result = [];
         foreach ($data as $item) {
-            if (strpos($item['name'], '更新') !== false) {
-                $result = $item['list'][0] ?? [];
-                break;
+            foreach ($item['list'] as $value) {
+                if (strpos($value['url'], '单线路.zip') !== false) {
+                    $result = $value;
+                    break;
+                }
             }
         }
         if (!$result) {
