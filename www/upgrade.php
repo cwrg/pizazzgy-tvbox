@@ -6,6 +6,20 @@ class Upgrade
     const URI = 'https://9877.kstore.space/Market/market.json';
 
     /**
+     * 直播源
+     * @var array[]
+     */
+    public static $lives = [
+        [
+            'name' => 'ssili126',
+            'type' => 0,
+            'url' => 'https://ghproxy.net/raw.githubusercontent.com/ssili126/tv/main/itvlist.txt',
+            'playerType' => 1,
+            'timeout' => 10
+        ]
+    ];
+
+    /**
      * 获取版本号
      * @return false|string
      */
@@ -70,7 +84,14 @@ class Upgrade
     {
         $file = './upgrade/' . $version . '.zip';
         is_dir(dirname($file)) || mkdir(dirname($file), 0777, true);
-        file_put_contents($file, file_get_contents($url));
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $data = curl_exec($ch);
+        curl_close($ch);
+        file_put_contents($file, $data);
         return $file;
     }
 
@@ -88,6 +109,20 @@ class Upgrade
         is_dir('./resource') || mkdir('./resource', 0777, true);
         $zip->extractTo('./resource');
         $zip->close();
+    }
+
+    /**
+     * 合并直播源
+     * @param $lives
+     * @return void
+     */
+    private function mergeLives($lives)
+    {
+        $file = './resource/TVBoxOSC/tvbox/api.json';
+        $data = file_get_contents($file);
+        $data = json_decode($data, true);
+        $data['lives'] = array_merge($data['lives'], $lives);
+        file_put_contents($file, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
     }
 
     /**
@@ -114,6 +149,7 @@ class Upgrade
         $upgrade = $static->getUpgradeInfo();
         $file = $static->download($upgrade['url'], $upgrade['version']);
         $static->unzip($file);
+        $static->mergeLives(self::$lives);
         file_put_contents('./version', $upgrade['version']);
         $static->result(1, '升级成功', ['version' => $upgrade['version']]);
     }
